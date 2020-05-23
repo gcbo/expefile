@@ -5,6 +5,7 @@ extend [pefile](https://github.com/erocarrera/pefile) module.
 * add new IID ,IAT,dll
 * add new reloc
 * inject binary code to pe 
+* convert memory mapped data to  pe raw file when you handle dumped file
 ## how to use
 
 1. add a new section

@@ -10,6 +10,8 @@ class PE(pefile.PE):
         self.get_dll()
     def get_dll(self):
         self.exist_dll={}
+        if not hasattr(self, 'DIRECTORY_ENTRY_IMPORT'):
+            return
         for entry in self.DIRECTORY_ENTRY_IMPORT:
             self.exist_dll[entry.dll]=[ imp.name for imp in  entry.imports ]
     def copy_to_raw(self,raw,data):
@@ -236,7 +238,25 @@ class PE(pefile.PE):
         self.OPTIONAL_HEADER.DATA_DIRECTORY[5].Size = relocs_size
         self.copy_to_rva(new_reloc_rva,reloc_data)
         self.parse_data_directories()
+    def get_file_data_from_image(self,mapped_data):
 
+
+        raw_data = b''
+        for i, section in enumerate( self.sections):
+
+
+            VirtualAddress_adj = self.adjust_SectionAlignment( section.VirtualAddress,
+                self.OPTIONAL_HEADER.SectionAlignment, self.OPTIONAL_HEADER.FileAlignment )
+            if i==0:
+                # handle pe header
+                PointerToRawData_adj = self.adjust_FileAlignment(section.PointerToRawData,
+                                                                 self.OPTIONAL_HEADER.FileAlignment)
+                raw_data+=mapped_data[:PointerToRawData_adj]
+
+            end = section.SizeOfRawData + VirtualAddress_adj
+            raw_data+=mapped_data[VirtualAddress_adj:end]
+
+        return raw_data
 
 
 
